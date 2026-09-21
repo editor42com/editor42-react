@@ -11,14 +11,10 @@ interface EventHandlerArgs<T> {
 
 type HandlerType<A> = (a: A, editor: Editor42Editor) => unknown;
 
-const VERSIONS: Version[] = [ '5', '6', '7', '8' ];
-const CLOUD_VERSIONS: Version[] = [ '5', '6', '7', '8' ];
-
+const VERSIONS: Version[] = [ '5', '6', '7' ];
 // Editor42 first: it is the engine these components target; the TinyMCE versions
 // stay as the compatibility matrix.
 const ENGINES: Engine[] = [ 'editor42', ...VERSIONS ];
-
-const VALID_API_KEY = 'qagffr3pkuv17a8on1afax661irst1hbr4e6tbv888sz91jc';
 
 const EventStore = () => {
   const state: Cell<Record<string, EventHandlerArgs<unknown>[]>> = Cell({});
@@ -53,10 +49,8 @@ const EventStore = () => {
 };
 
 export {
-  VALID_API_KEY,
   EventStore,
   VERSIONS,
-  CLOUD_VERSIONS,
   ENGINES,
   Version
 };

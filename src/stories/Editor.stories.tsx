@@ -3,7 +3,6 @@ import React from 'react';
 import { EditorEvent, Events, Editor as Editor42Editor } from 'editor42';
 import { Editor, IAllProps } from '../main/ts/components/Editor';
 
-const apiKey = 'qagffr3pkuv17a8on1afax661irst1hbr4e6tbv888sz91jc';
 const initialValue = `
 <h2>Full-featured rich text editing experience</h2>
 <p>No matter what you're building, TinyMCE has got you covered.</p>
@@ -14,7 +13,7 @@ const argTypes = {
   // Define arg types that need it, i.e. ones that haven't got a good default:
   plugins: { control: { type: 'text' }},
   toolbar: { control: { type: 'text' }},
-  cloudChannel: { control: { type: 'text' }},
+  channel: { control: { type: 'text' }},
   rollback: { control: { type: 'number' }}
 };
 
@@ -30,7 +29,6 @@ export default {
 
 export const IframeEditor: StoryObj<Editor> = {
   args: {
-    apiKey,
     initialValue,
   },
   argTypes,
@@ -38,7 +36,6 @@ export const IframeEditor: StoryObj<Editor> = {
 
 export const InlineEditor: StoryObj<Editor> = {
   args: {
-    apiKey,
     initialValue,
     inline: true,
   },
@@ -58,7 +55,6 @@ export const ControlledInput: StoryObj<Editor> = {
     return (
       <div>
         <Editor
-          apiKey={apiKey}
           value={data}
           onEditorChange={(e) => {
             setData(e);
@@ -79,7 +75,6 @@ export const ControlledInput: StoryObj<Editor> = {
 export const ControlledInputFixed: StoryObj<Editor> = {
   render: () =>
     <Editor
-      apiKey={apiKey}
       value='<p>This value is <strong>fixed</strong> and can not be <em>changed</em>.</p>'
     />
 };
@@ -114,7 +109,6 @@ export const ControlledInputLimitLength: StoryObj<Editor> = {
     return (
       <div>
         <Editor
-          apiKey={apiKey}
           value={data}
           onEditorChange={handleUpdate}
           onBeforeAddUndo={handleBeforeAddUndo}
@@ -133,7 +127,6 @@ export const ToggleDisabledProp: StoryObj<Editor> = {
     return (
       <div>
         <Editor
-          apiKey={apiKey}
           initialValue={initialValue}
           disabled={disabled}
         />
@@ -152,7 +145,6 @@ export const ToggleReadonlyProp: StoryObj<Editor> = {
     return (
       <div>
         <Editor
-          apiKey={apiKey}
           initialValue={initialValue}
           readonly={readonly}
         />
@@ -165,15 +157,14 @@ export const ToggleReadonlyProp: StoryObj<Editor> = {
 };
 
 export const CloudChannelSetTo5Dev: StoryObj<Editor> = {
-  name: 'Cloud Channel Set To "6-dev"',
+  name: 'Channel Set To "42.0.0"',
   render: () => (
     <div>
       <Editor
-        apiKey={apiKey}
-        cloudChannel='6-dev'
+        channel='42.0.0'
         initialValue={initialValue}
       />
-      <p>Refresh the page to ensure a load from the "6-dev" channel</p>
+      <p>Refresh the page to ensure a load from the "42.0.0" channel</p>
     </div>
   )
 };

@@ -6,6 +6,9 @@ export interface ScriptItem {
   src: string;
   async?: boolean;
   defer?: boolean;
+  /** Subresource integrity hash for the script tag, for pinned-version deployments. */
+  integrity?: string;
+  crossOrigin?: 'anonymous' | 'use-credentials';
 }
 
 interface Id {
@@ -20,6 +23,12 @@ const injectScriptTag = (doc: Document, item: ScriptItem & Id, handler: (id: str
   scriptTag.src = item.src;
   scriptTag.async = item.async ?? false;
   scriptTag.defer = item.defer ?? false;
+  if (item.integrity !== undefined) {
+    scriptTag.integrity = item.integrity;
+  }
+  if (item.crossOrigin !== undefined) {
+    scriptTag.crossOrigin = item.crossOrigin;
+  }
 
   const loadHandler = () => {
     scriptTag.removeEventListener('load', loadHandler);
@@ -53,6 +62,11 @@ const createDocumentScriptLoader = (doc: Document) => {
 
   const scriptLoadOrErrorHandler = (src: string, err?: unknown) => {
     const item = lookup[src];
+    if (item === undefined) {
+      // stale load/error event for a script this loader no longer tracks
+      // (reinitialize() ran while the fetch was still in flight)
+      return;
+    }
     item.done = true;
     item.error = err;
     for (const h of item.handlers) {

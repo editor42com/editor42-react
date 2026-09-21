@@ -17,7 +17,7 @@ interface DoNotUse<T extends string> {
   __brand: T;
 }
 
-type OmittedInitProps = 'selector' | 'target' | 'readonly' | 'disabled' | 'license_key';
+type OmittedInitProps = 'selector' | 'target' | 'readonly' | 'disabled';
 
 type EditorOptions = Parameters<Editor42['init']>[0];
 
@@ -26,14 +26,30 @@ export type InitOptions = Omit<OmitStringIndexSignature<EditorOptions>, OmittedI
   target?: DoNotUse<'target prop is handled internally by the component'>;
   readonly?: DoNotUse<'readonly prop is overridden by the component'>;
   disabled?: DoNotUse<'disabled prop is overridden by the component'>;
-  license_key?: DoNotUse<'license_key prop is overridden by the integration, use the `licenseKey` prop instead'>;
 } & { [key: string]: unknown };
 
 export type Version = `${'4' | '5' | '6' | '7' | '8'}${'' | '-dev' | '-testing' | `.${number}` | `.${number}.${number}`}`;
 
+export type Channel = 'latest' | `latest-${number}` | `42.${number}` | `42.${number}.${number}`;
+
+// TinyMCE-style numeric channels have no meaning on cdn.editor42.com. Migrated code that
+// pinned one gets the stable 'latest' alias instead: the 42 major never breaks by policy.
+const normalizeChannel = (channel: string | undefined): string => {
+  if (channel === undefined) {
+    return 'latest';
+  }
+  if (/^[4-8]([.-]|$)/.test(channel)) {
+    // eslint-disable-next-line no-console
+    console.warn(`editor42-react: cloudChannel '${channel}' is a TinyMCE channel; loading 'latest' instead. Set the 'channel' prop to silence this.`);
+    return 'latest';
+  }
+  return channel;
+};
+
 export interface IProps {
   /**
-   * @description TinyMCE API key for deployments using Tiny Cloud.
+   * @description Removed. Accepted so existing code compiles; the value is never read
+   * or sent anywhere.
    */
   apiKey: string;
   /**
@@ -74,7 +90,13 @@ export interface IProps {
    */
   tabIndex: number;
   /**
-   * @description The TinyMCE build to use when loading from Tiny Cloud.
+   * @description The cdn.editor42.com channel the fallback loader uses when no script
+   * src prop is given: 'latest' (default), a latest-N alias, or an exact version.
+   */
+  channel: Channel | Version;
+  /**
+   * @description Deprecated alias of `channel`. TinyMCE-style numeric channels are
+   * mapped to 'latest'.
    */
   cloudChannel: Version;
   /**
@@ -98,7 +120,12 @@ export interface IProps {
    */
   textareaName: string;
   /**
-   * @description The URL of the TinyMCE script to lazy load.
+   * @description The URL (or URLs) of the editor script to lazy load, including the file
+   * name; editor42 and TinyMCE builds both work. An empty array opts out of loading.
+   */
+  editor42ScriptSrc: string | string[] | ScriptItem[];
+  /**
+   * @description Deprecated alias of `editor42ScriptSrc`.
    */
   tinymceScriptSrc: string | string[] | ScriptItem[];
   /**
@@ -117,7 +144,8 @@ export interface IProps {
     delay?: number;
   };
   /**
-   * @description Tiny Cloud License Key for when self-hosting TinyMCE.
+   * @description Removed. Accepted so existing code compiles; the value is never read
+   * or sent anywhere.
    */
   licenseKey: string;
 }
@@ -128,10 +156,6 @@ export interface IAllProps extends Partial<IProps>, Partial<IEvents> { }
  */
 export class Editor extends React.Component<IAllProps> {
   public static propTypes: IEditorPropTypes = EditorPropTypes;
-
-  public static defaultProps: Partial<IAllProps> = {
-    cloudChannel: '8',
-  };
 
   public editor?: Editor42Editor;
 
@@ -216,10 +240,11 @@ export class Editor extends React.Component<IAllProps> {
   }
 
   public componentDidMount() {
+    const scriptSrc = this.scriptSrcProp();
     if (getEditor42(this.view) !== null) {
       this.initialise();
-    } else if (Array.isArray(this.props.tinymceScriptSrc) && this.props.tinymceScriptSrc.length === 0) {
-      this.props.onScriptsLoadError?.(new Error('No `tinymce` global is present but the `tinymceScriptSrc` prop was an empty array.'));
+    } else if (Array.isArray(scriptSrc) && scriptSrc.length === 0) {
+      this.props.onScriptsLoadError?.(new Error('No editor42 (or tinymce) global is present but the `editor42ScriptSrc` prop was an empty array.'));
     } else if (this.elementRef.current?.ownerDocument) {
       const successHandler = () => {
         this.props.onScriptsLoad?.();
@@ -283,15 +308,20 @@ export class Editor extends React.Component<IAllProps> {
     });
   }
 
+  private scriptSrcProp() {
+    return this.props.editor42ScriptSrc ?? this.props.tinymceScriptSrc;
+  }
+
   private getScriptSources(): ScriptItem[] {
     const async = this.props.scriptLoading?.async;
     const defer = this.props.scriptLoading?.defer;
-    if (this.props.tinymceScriptSrc !== undefined) {
-      if (typeof this.props.tinymceScriptSrc === 'string') {
-        return [{ src: this.props.tinymceScriptSrc, async, defer }];
+    const scriptSrc = this.scriptSrcProp();
+    if (scriptSrc !== undefined) {
+      if (typeof scriptSrc === 'string') {
+        return [{ src: scriptSrc, async, defer }];
       }
       // multiple scripts can be specified which allows for hybrid mode
-      return this.props.tinymceScriptSrc.map((item) => {
+      return scriptSrc.map((item) => {
         if (typeof item === 'string') {
           // async does not make sense for multiple items unless
           // they are not dependent (which will be unlikely)
@@ -301,11 +331,10 @@ export class Editor extends React.Component<IAllProps> {
         }
       });
     }
-    // fallback to the cloud when the tinymceScriptSrc is not specified
-    const channel = this.props.cloudChannel as Version; // `cloudChannel` is in `defaultProps`, so it's always defined.
-    const apiKey = this.props.apiKey ? this.props.apiKey : 'no-api-key';
-    const cloudTinyJs = `https://cdn.tiny.cloud/1/${apiKey}/tinymce/${channel}/tinymce.min.js`;
-    return [{ src: cloudTinyJs, async, defer }];
+    // fallback to the editor42 cdn when no script src is specified; no key of any kind
+    const channel = normalizeChannel(this.props.channel ?? this.props.cloudChannel);
+    const cdnJs = `https://cdn.editor42.com/editor42/${channel}/editor42.min.js`;
+    return [{ src: cdnJs, async, defer }];
   }
 
   private getInitialValue() {
@@ -440,7 +469,6 @@ export class Editor extends React.Component<IAllProps> {
       inline: this.inline,
       plugins: mergePlugins(this.props.init?.plugins, this.props.plugins),
       toolbar: this.props.toolbar ?? this.props.init?.toolbar,
-      ...(this.props.licenseKey ? { license_key: this.props.licenseKey } : {}),
       setup: (editor) => {
         this.editor = editor;
         this.bindHandlers({});

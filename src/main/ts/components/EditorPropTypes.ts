@@ -97,12 +97,24 @@ export const EditorPropTypes: IEditorPropTypes = {
   value: PropTypes.string,
   tagName: PropTypes.string,
   tabIndex: PropTypes.number,
+  channel: PropTypes.string,
   cloudChannel: PropTypes.string,
   plugins: PropTypes.oneOfType([ PropTypes.string, PropTypes.array ]),
   toolbar: PropTypes.oneOfType([ PropTypes.string, PropTypes.array ]),
   disabled: PropTypes.bool,
   readonly: PropTypes.bool,
   textareaName: PropTypes.string,
+  editor42ScriptSrc: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.arrayOf(PropTypes.string),
+    PropTypes.arrayOf(PropTypes.shape({
+      src: PropTypes.string,
+      async: PropTypes.bool,
+      defer: PropTypes.bool,
+      integrity: PropTypes.string,
+      crossOrigin: PropTypes.string
+    }))
+  ]),
   tinymceScriptSrc: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.arrayOf(PropTypes.string),

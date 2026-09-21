@@ -1,7 +1,7 @@
 import { Assertions } from '@ephox/agar';
 import { context, describe, it } from '@ephox/bedrock-client';
 
-import { ENGINES, VALID_API_KEY } from '../alien/TestHelpers';
+import { ENGINES } from '../alien/TestHelpers';
 import * as Loader from '../alien/Loader';
 import { TinyAssertions } from '@ephox/mcagar';
 import { IAllProps } from 'src/main/ts';
@@ -13,9 +13,8 @@ const assertProperty = (obj: {}, propName: string, expected: unknown) => {
 describe('EditorInitTest', () => {
   ENGINES.forEach((version) =>
     Loader.withVersion(version, (renderWithVersion) => {
-      // The engine is preloaded by withVersion, so these props are inert here; they stay
-      // on the TinyMCE contexts to prove upstream props are still accepted.
-      const defaultProps: IAllProps = version === 'editor42' ? {} : { apiKey: VALID_API_KEY, cloudChannel: version };
+      // The engine is preloaded by withVersion, so no script props are needed here.
+      const defaultProps: IAllProps = {};
       const render = (props: IAllProps = {}) => renderWithVersion({ ...defaultProps, ...props });
 
       context('tagName prop changes element', () => {
@@ -76,7 +75,7 @@ describe('EditorInitTest', () => {
         using _ = await render({
           init: {
             // @ts-expect-error Overriden props
-            target: document.createElement('div'), readonly: true, selector: 'textarea#my-id', license_key: 'gpl'
+            target: document.createElement('div'), readonly: true, selector: 'textarea#my-id'
           }
         });
       });
