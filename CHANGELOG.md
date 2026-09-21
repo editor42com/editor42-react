@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## 1.0.0 - 2026-09-21
+
+### Changed
+- Forked @tinymce/tinymce-react 6.3.0 as @editor42/editor42-react, targeting Editor42.
+- Renamed the identifiers this component looks for: it resolves the editor42 global and falls back to a stock TinyMCE when that is what the page has loaded.
+- The script loader now defaults to https://cdn.editor42.com on the latest channel, through the new editor42ScriptSrc and channel props. tinymceScriptSrc and cloudChannel remain as deprecated aliases.
+- Script items accept integrity and crossOrigin for CSP-hardened deployments.
+
+### Removed
+- All API-key and licence-key handling. The props are still accepted so existing code compiles, but no key is read, stored or sent, and no request reaches a vendor cloud.
+- Vendor CI, release tooling and the vendor cloud test matrix.
+
 ## 6.3.0 - 2025-07-31
 
 ### Changed

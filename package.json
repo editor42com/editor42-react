@@ -85,7 +85,7 @@
     "typescript": "~5.8.2",
     "vite": "^6.2.1"
   },
-  "version": "6.3.0",
+  "version": "1.0.0",
   "name": "@editor42/editor42-react",
   "publishConfig": {
     "access": "public",
