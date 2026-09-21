@@ -36,11 +36,15 @@
     "prop-types": "^15.6.2"
   },
   "peerDependencies": {
+    "editor42": "*",
     "react": "^19.0.0 || ^18.0.0 || ^17.0.1 || ^16.7.0",
     "react-dom": "^19.0.0 || ^18.0.0 || ^17.0.1 || ^16.7.0",
     "tinymce": "^8.0.0 || ^7.0.0 || ^6.0.0 || ^5.5.1"
   },
   "peerDependenciesMeta": {
+    "editor42": {
+      "optional": true
+    },
     "tinymce": {
       "optional": true
     }

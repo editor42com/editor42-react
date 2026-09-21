@@ -3,8 +3,8 @@ import { Remove, SugarElement, SugarNode } from '@ephox/sugar';
 import * as React from 'react';
 import * as ReactDOMClient from 'react-dom/client';
 import { Editor, IAllProps, IProps, Version } from '../../../main/ts/components/Editor';
-import { Editor as TinyMCEEditor } from 'tinymce';
-import { before, context } from '@ephox/bedrock-client';
+import { Editor as Editor42Editor } from 'editor42';
+import { after, before, context } from '@ephox/bedrock-client';
 import { VersionLoader } from '@tinymce/miniature';
 import { setMode } from 'src/main/ts/Utils';
 
@@ -15,7 +15,7 @@ Symbol.asyncDispose ??= Symbol('Symbol.asyncDispose');
 
 export interface Context {
   DOMNode: HTMLElement;
-  editor: TinyMCEEditor;
+  editor: Editor42Editor;
   ref: React.RefObject<Editor>;
 }
 
@@ -101,10 +101,63 @@ type RenderWithVersion = (
   container?: HTMLElement | HTMLDivElement
 ) => Promise<ReactEditorContext>;
 
-export const withVersion = (version: Version, fn: (render: RenderWithVersion) => void): void => {
-  context(`TinyMCE (${version})`, () => {
+export type Engine = Version | 'editor42';
+
+const EDITOR42_SRC = '/project/node_modules/editor42/editor42.min.js';
+
+// Drop editor42 from the page (and the shim aliases it may have installed) so a
+// following context can load the engine it actually asked for.
+export const cleanEditor42 = (): void => {
+  const w = window as any;
+  if (w.tinymce !== undefined && w.tinymce === w.editor42) {
+    delete w.tinymce;
+  }
+  if (w.tinyMCE !== undefined && w.tinyMCE === w.editor42) {
+    delete w.tinyMCE;
+  }
+  delete w.editor42;
+  delete w.EDITOR42_NO_SHIM;
+  document.querySelectorAll('script[src*="editor42"]').forEach((s) => s.parentNode?.removeChild(s));
+};
+
+// Full engine sweep: globals, editors and script tags of BOTH engines. Contexts use it
+// so every test file is self-cleaning regardless of the order bedrock runs files in.
+export const cleanAllEngines = (): void => {
+  const w = window as any;
+  cleanEditor42();
+  delete w.tinymce;
+  delete w.tinyMCE;
+  document.querySelectorAll('script[src*="tinymce"]').forEach((s) => s.parentNode?.removeChild(s));
+};
+
+export const pLoadEditor42 = (options: { noShim?: boolean } = {}): Promise<void> => {
+  cleanEditor42();
+  if (options.noShim) {
+    (window as any).EDITOR42_NO_SHIM = true;
+  }
+  return new Promise<void>((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = EDITOR42_SRC;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('failed to load ' + EDITOR42_SRC));
+    document.head.appendChild(script);
+  });
+};
+
+export const withVersion = (version: Engine, fn: (render: RenderWithVersion) => void): void => {
+  const label = version === 'editor42' ? 'Editor42' : `TinyMCE (${version})`;
+  context(label, () => {
     before(async () => {
-      await VersionLoader.pLoadVersion(version);
+      if (version === 'editor42') {
+        await pLoadEditor42();
+      } else {
+        cleanEditor42();
+        await VersionLoader.pLoadVersion(version);
+      }
+    });
+
+    after(() => {
+      cleanAllEngines();
     });
 
     fn(render as RenderWithVersion);

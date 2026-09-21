@@ -1,6 +1,6 @@
-import type { Editor as TinyMCEEditor, EditorEvent, Events } from 'tinymce';
+import type { Editor as Editor42Editor, EditorEvent, Events } from 'editor42';
 
-export type EventHandler<A> = (a: EditorEvent<A>, editor: TinyMCEEditor) => unknown;
+export type EventHandler<A> = (a: EditorEvent<A>, editor: Editor42Editor) => unknown;
 
 type EEventHandler<K extends keyof Events.EditorEventMap> = EventHandler<Events.EditorEventMap[K]>;
 

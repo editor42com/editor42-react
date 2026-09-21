@@ -1,6 +1,6 @@
 import { StoryObj } from '@storybook/react';
 import React from 'react';
-import { EditorEvent, Events, Editor as TinyMCEEditor } from 'tinymce';
+import { EditorEvent, Events, Editor as Editor42Editor } from 'editor42';
 import { Editor, IAllProps } from '../main/ts/components/Editor';
 
 const apiKey = 'qagffr3pkuv17a8on1afax661irst1hbr4e6tbv888sz91jc';
@@ -90,11 +90,11 @@ export const ControlledInputLimitLength: StoryObj<Editor> = {
     const [ data, setData ] = React.useState('<p>This field can only take 50 characters.</p>');
     const [ len, setLen ] = React.useState(0);
 
-    const handleInit = (evt: unknown, editor: TinyMCEEditor) => {
+    const handleInit = (evt: unknown, editor: Editor42Editor) => {
       setLen(editor.getContent({ format: 'text' }).length);
     };
 
-    const handleUpdate = (value: string, editor: TinyMCEEditor) => {
+    const handleUpdate = (value: string, editor: Editor42Editor) => {
       const length = editor.getContent({ format: 'text' }).length;
       if (length <= sizeLimit) {
         setData(value);
@@ -102,7 +102,7 @@ export const ControlledInputLimitLength: StoryObj<Editor> = {
       }
     };
 
-    const handleBeforeAddUndo = (evt: EditorEvent<Events.EditorEventMap['BeforeAddUndo']>, editor: TinyMCEEditor) => {
+    const handleBeforeAddUndo = (evt: EditorEvent<Events.EditorEventMap['BeforeAddUndo']>, editor: Editor42Editor) => {
       const length = editor.getContent({ format: 'text' }).length;
       // note that this is the opposite test as in handleUpdate
       // because we are determining when to deny adding an undo level

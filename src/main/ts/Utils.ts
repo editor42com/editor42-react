@@ -1,7 +1,7 @@
 import { eventPropTypes, IEventPropTypes } from './components/EditorPropTypes';
 import { IAllProps } from './components/Editor';
-import type { Editor as TinyMCEEditor, EditorEvent } from 'tinymce';
-import { getTinymce } from './TinyMCE';
+import type { Editor as Editor42Editor, EditorEvent } from 'editor42';
+import { getEditor42 } from './Editor42';
 
 export const isFunction = (x: unknown): x is Function => typeof x === 'function';
 
@@ -43,7 +43,7 @@ export const configHandlers2 = <H> (
 };
 
 export const configHandlers = (
-  editor: TinyMCEEditor,
+  editor: Editor42Editor,
   prevProps: Partial<IAllProps>,
   props: Partial<IAllProps>,
   boundHandlers: Record<string, (event: EditorEvent<any>) => unknown>,
@@ -102,7 +102,7 @@ export const isInDoc = (elem: Node) => {
   return elem.isConnected;
 };
 
-export const setMode = (editor: TinyMCEEditor | undefined, mode: 'readonly' | 'design') => {
+export const setMode = (editor: Editor42Editor | undefined, mode: 'readonly' | 'design') => {
   if (editor !== undefined) {
     if (editor.mode != null && typeof editor.mode === 'object' && typeof editor.mode.set === 'function') {
       editor.mode.set(mode);
@@ -112,13 +112,13 @@ export const setMode = (editor: TinyMCEEditor | undefined, mode: 'readonly' | 'd
   }
 };
 
-export const getTinymceOrError = (view: Window) => {
-  const tinymce = getTinymce(view);
-  if (!tinymce) {
-    throw new Error('tinymce should have been loaded into global scope');
+export const getEditor42OrError = (view: Window) => {
+  const editor42 = getEditor42(view);
+  if (!editor42) {
+    throw new Error('editor42 should have been loaded into global scope');
   }
 
-  return tinymce;
+  return editor42;
 };
 
-export const isDisabledOptionSupported = (editor: TinyMCEEditor) => editor.options && editor.options.isRegistered('disabled');
+export const isDisabledOptionSupported = (editor: Editor42Editor) => editor.options && editor.options.isRegistered('disabled');

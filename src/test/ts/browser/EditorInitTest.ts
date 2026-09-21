@@ -1,7 +1,7 @@
 import { Assertions } from '@ephox/agar';
 import { context, describe, it } from '@ephox/bedrock-client';
 
-import { VALID_API_KEY, VERSIONS } from '../alien/TestHelpers';
+import { ENGINES, VALID_API_KEY } from '../alien/TestHelpers';
 import * as Loader from '../alien/Loader';
 import { TinyAssertions } from '@ephox/mcagar';
 import { IAllProps } from 'src/main/ts';
@@ -11,9 +11,11 @@ const assertProperty = (obj: {}, propName: string, expected: unknown) => {
 };
 
 describe('EditorInitTest', () => {
-  VERSIONS.forEach((version) =>
+  ENGINES.forEach((version) =>
     Loader.withVersion(version, (renderWithVersion) => {
-      const defaultProps: IAllProps = { apiKey: VALID_API_KEY, cloudChannel: version };
+      // The engine is preloaded by withVersion, so these props are inert here; they stay
+      // on the TinyMCE contexts to prove upstream props are still accepted.
+      const defaultProps: IAllProps = version === 'editor42' ? {} : { apiKey: VALID_API_KEY, cloudChannel: version };
       const render = (props: IAllProps = {}) => renderWithVersion({ ...defaultProps, ...props });
 
       context('tagName prop changes element', () => {
@@ -46,7 +48,7 @@ describe('EditorInitTest', () => {
 
         it('gets set automatically to uuid if not set', async () => {
           using ctx = await render();
-          Assertions.assertEq('Should not be uuid', typeof ctx.DOMNode.id === 'string' && ctx.DOMNode.id.indexOf('tiny-react') !== -1, true);
+          Assertions.assertEq('Should not be uuid', typeof ctx.DOMNode.id === 'string' && ctx.DOMNode.id.indexOf('editor42-react') !== -1, true);
         });
       });
 

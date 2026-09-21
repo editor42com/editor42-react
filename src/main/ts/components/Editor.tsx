@@ -1,13 +1,13 @@
 import * as React from 'react';
-import type { Bookmark, EditorEvent, TinyMCE, Editor as TinyMCEEditor } from 'tinymce';
+import type { Bookmark, EditorEvent, Editor42, Editor as Editor42Editor } from 'editor42';
 import { IEvents } from '../Events';
 import { ScriptItem, ScriptLoader } from '../ScriptLoader2';
 import { configHandlers, isBeforeInputEventAvailable,
   isFunction, isInDoc, isTextareaOrInput, mergePlugins,
   setMode, uuid, isDisabledOptionSupported,
-  getTinymceOrError } from '../Utils';
+  getEditor42OrError } from '../Utils';
 import { EditorPropTypes, IEditorPropTypes } from './EditorPropTypes';
-import { getTinymce } from '../TinyMCE';
+import { getEditor42 } from '../Editor42';
 
 const changeEvents = 'change keyup compositionend setcontent CommentChange';
 
@@ -19,7 +19,7 @@ interface DoNotUse<T extends string> {
 
 type OmittedInitProps = 'selector' | 'target' | 'readonly' | 'disabled' | 'license_key';
 
-type EditorOptions = Parameters<TinyMCE['init']>[0];
+type EditorOptions = Parameters<Editor42['init']>[0];
 
 export type InitOptions = Omit<OmitStringIndexSignature<EditorOptions>, OmittedInitProps> & {
   selector?: DoNotUse<'selector prop is handled internally by the component'>;
@@ -33,97 +33,79 @@ export type Version = `${'4' | '5' | '6' | '7' | '8'}${'' | '-dev' | '-testing' 
 
 export interface IProps {
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#apikey React Tech Ref - apiKey}
    * @description TinyMCE API key for deployments using Tiny Cloud.
    */
   apiKey: string;
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#id React Tech Ref - id}
    * @description The ID of the element to render the editor into.
    */
   id: string;
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#inline React Tech Ref - inline}
    * @description Whether the editor should be rendered inline. Equivalent to the `inline` option in TinyMCE.
    */
   inline: boolean;
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#initialvalue React Tech Ref - initialValue}
    * @description The initial HTML content of the editor.
    *
    * IMPORTANT: Ensure that this is **not** updated by `onEditorChange` or the editor will be unusable.
    */
   initialValue: string;
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#oneditorchange React Tech Ref - onEditorChange}
    * @description Used to store the state of the editor outside the component. Typically used for controlled components.
    * @param a The current HTML content of the editor.
    * @param editor The TinyMCE editor instance.
    * @returns void
    */
-  onEditorChange: (a: string, editor: TinyMCEEditor) => void;
+  onEditorChange: (a: string, editor: Editor42Editor) => void;
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#value React Tech Ref - value}
    * @description The current HTML content of the editor. Typically used for controlled components.
    */
   value: string;
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#init React Tech Ref - init}
    * @description Additional settings passed to `tinymce.init()` when initializing the editor.
    */
   init: InitOptions;
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#tagname React Tech Ref - tagName}
    * @description The tag name of the element to render the editor into. Only valid when `inline` is `true`.
    */
   tagName: string;
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#tabIndex React Tech Ref - tabIndex}
    * @description The tab index of the element that the editor wraps.
    */
   tabIndex: number;
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#cloudchannel React Tech Ref - cloudChannel}
    * @description The TinyMCE build to use when loading from Tiny Cloud.
    */
   cloudChannel: Version;
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#plugins React Tech Ref - plugins}
    * @description The plugins to load into the editor. Equivalent to the `plugins` option in TinyMCE.
    */
   plugins: NonNullable<EditorOptions['plugins']>;
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#toolbar React Tech Ref - toolbar}
    * @description The toolbar to load into the editor. Equivalent to the `toolbar` option in TinyMCE.
    */
   toolbar: NonNullable<EditorOptions['toolbar']>;
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#disabled React Tech Ref - disabled}
    * @description Whether the editor should be disabled.
    */
   disabled: boolean;
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#readonly React Tech Ref - readonly}
    * @description Whether the editor should be readonly.
    */
   readonly: boolean;
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#textareaname React Tech Ref - textareaName}
    * @description Set the `name` attribute of the `textarea` element used for the editor in forms. Only valid in iframe mode.
    */
   textareaName: string;
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#tinymcescriptsrc React Tech Ref - tinymceScriptSrc}
    * @description The URL of the TinyMCE script to lazy load.
    */
   tinymceScriptSrc: string | string[] | ScriptItem[];
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#rollback React Tech Ref - rollback}
    * @description The number of milliseconds to wait before reverting to the previous value when the editor's content changes.
    */
   rollback: number | false;
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#scriptloading React Tech Ref - scriptLoading}
    * @description Options for how the TinyMCE script should be loaded.
    * @property async Whether the script should be loaded with the `async` attribute.
    * @property defer Whether the script should be loaded with the `defer` attribute.
@@ -135,7 +117,6 @@ export interface IProps {
     delay?: number;
   };
   /**
-   * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/#licenseKey React Tech Ref - licenseKey}
    * @description Tiny Cloud License Key for when self-hosting TinyMCE.
    */
   licenseKey: string;
@@ -144,7 +125,6 @@ export interface IProps {
 export interface IAllProps extends Partial<IProps>, Partial<IEvents> { }
 
 /**
- * @see {@link https://www.tiny.cloud/docs/tinymce/7/react-ref/ TinyMCE React Technical Reference}
  */
 export class Editor extends React.Component<IAllProps> {
   public static propTypes: IEditorPropTypes = EditorPropTypes;
@@ -153,7 +133,7 @@ export class Editor extends React.Component<IAllProps> {
     cloudChannel: '8',
   };
 
-  public editor?: TinyMCEEditor;
+  public editor?: Editor42Editor;
 
   private id: string;
   private elementRef: React.RefObject<HTMLElement | null>;
@@ -165,7 +145,7 @@ export class Editor extends React.Component<IAllProps> {
 
   public constructor(props: Partial<IAllProps>) {
     super(props);
-    this.id = this.props.id || uuid('tiny-react');
+    this.id = this.props.id || uuid('editor42-react');
     this.elementRef = React.createRef<HTMLElement | null>();
     this.inline = this.props.inline ?? this.props.init?.inline ?? false;
     this.boundHandlers = {};
@@ -236,7 +216,7 @@ export class Editor extends React.Component<IAllProps> {
   }
 
   public componentDidMount() {
-    if (getTinymce(this.view) !== null) {
+    if (getEditor42(this.view) !== null) {
       this.initialise();
     } else if (Array.isArray(this.props.tinymceScriptSrc) && this.props.tinymceScriptSrc.length === 0) {
       this.props.onScriptsLoadError?.(new Error('No `tinymce` global is present but the `tinymceScriptSrc` prop was an empty array.'));
@@ -444,12 +424,12 @@ export class Editor extends React.Component<IAllProps> {
         setTimeout(() => this.initialise(attempts + 1), 100);
       } else {
         // give up, at this point it seems that more polling is unlikely to help
-        throw new Error('tinymce can only be initialised when in a document');
+        throw new Error('the editor can only be initialised when in a document');
       }
       return;
     }
 
-    const tinymce = getTinymceOrError(this.view);
+    const editor42 = getEditor42OrError(this.view);
 
     const finalInit: EditorOptions = {
       ...this.props.init as Omit<InitOptions, OmittedInitProps>,
@@ -490,7 +470,7 @@ export class Editor extends React.Component<IAllProps> {
         }
       },
       init_instance_callback: (editor) => {
-        // check for changes that happened since tinymce.init() was called
+        // check for changes that happened since editor42.init() was called
         const initialValue = this.getInitialValue();
         this.currentContent = this.currentContent ?? editor.getContent();
         if (this.currentContent !== initialValue) {
@@ -516,6 +496,6 @@ export class Editor extends React.Component<IAllProps> {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    tinymce.init(finalInit);
+    editor42.init(finalInit);
   };
 }

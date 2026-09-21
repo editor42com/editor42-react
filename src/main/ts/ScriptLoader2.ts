@@ -91,7 +91,7 @@ const createDocumentScriptLoader = (doc: Document) => {
         }
       } else {
         // create a new entry
-        const id = uuid('tiny-');
+        const id = uuid('editor42-');
         lookup[item.src] = {
           id,
           src: item.src,

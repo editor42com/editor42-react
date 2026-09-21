@@ -5,9 +5,9 @@ import { describe, it } from '@ephox/bedrock-client';
 
 import { Assertions, Waiter } from '@ephox/agar';
 import { TinyAssertions, TinySelections } from '@ephox/mcagar';
-import { EditorEvent, Events, Editor as TinyMCEEditor } from 'tinymce';
-import { getTinymce } from '../../../main/ts/TinyMCE';
-import { EventStore, VERSIONS } from '../alien/TestHelpers';
+import { EditorEvent, Events, Editor as Editor42Editor } from 'editor42';
+import { getEditor42 } from '../../../main/ts/Editor42';
+import { ENGINES, EventStore } from '../alien/TestHelpers';
 
 type SetContentEvent = EditorEvent<Events.EditorEventMap['SetContent']>;
 
@@ -18,9 +18,17 @@ describe('EditorBehaviourTest', () => {
     return;
   }
   const versionRegex = /6|7|8/;
+  // The empty-editor SetContent payload differs per engine: editor42 follows the 6.x
+  // behavior but emits its own debranded bogus attribute; TinyMCE 5 sends ''.
+  const initialSetContent = (version: string) => {
+    if (version === 'editor42') {
+      return '<p><br data-editor42-bogus="1"></p>';
+    }
+    return versionRegex.test(version) ? '<p><br data-mce-bogus="1"></p>' : '';
+  };
 
-  const isEditor = (val: unknown): val is TinyMCEEditor => {
-    const tinymce = getTinymce(window);
+  const isEditor = (val: unknown): val is Editor42Editor => {
+    const tinymce = getEditor42(window);
     if (!tinymce) {
       return false;
     }
@@ -29,7 +37,7 @@ describe('EditorBehaviourTest', () => {
 
   const eventStore = EventStore();
 
-  VERSIONS.forEach((version) =>
+  ENGINES.forEach((version) =>
     Loader.withVersion(version, (render) => {
       it('Assert structure of tinymce and tinymce-react events', async () => {
         using ctx = await render({
@@ -43,7 +51,7 @@ describe('EditorBehaviourTest', () => {
           // note that this difference in behavior in 5-6 may be a bug, the team is investigating
           Assertions.assertEq(
             'First arg should be event from Tiny',
-            versionRegex.test(version) ? '<p><br data-mce-bogus="1"></p>' : '',
+            initialSetContent(version),
             events[0].editorEvent.content
           );
           Assertions.assertEq('Second arg should be editor', true, isEditor(events[0].editor));
@@ -108,7 +116,7 @@ describe('EditorBehaviourTest', () => {
           Assertions.assertEq(
             'Initial content is empty as editor does not have a value or initialValue',
             // note that this difference in behavior in 5-6 may be a bug, the team is investigating
-            versionRegex.test(version) ? '<p><br data-mce-bogus="1"></p>' : '',
+            initialSetContent(version),
             events[0].editorEvent.content
           );
         });

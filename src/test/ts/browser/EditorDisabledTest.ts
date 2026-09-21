@@ -4,6 +4,40 @@ import { Assertions, Waiter } from '@ephox/agar';
 
 describe('EditorDisabledTest', () => {
 
+  // editor42 is built on the 6.x core: no 'disabled' option, mode toggling applies.
+  context('with Editor42', () => {
+    Loader.withVersion('editor42', (render) => {
+      it('updating disabled prop should toggle the editor\'s mode', async () => {
+        using ctx = await render({
+          disabled: true
+        });
+
+        Assertions.assertEq('mode is readonly', 'readonly', ctx.editor.mode.get());
+
+        await ctx.reRender({
+          disabled: false
+        });
+        await Waiter.pTryUntil('mode is changed to design', () => {
+          Assertions.assertEq('mode is design', 'design', ctx.editor.mode.get());
+        });
+      });
+
+      it('updating readonly prop should toggle the editor\'s mode', async () => {
+        using ctx = await render({
+          readonly: true
+        });
+        Assertions.assertEq('mode is readonly', 'readonly', ctx.editor.mode.get());
+
+        await ctx.reRender({
+          readonly: false
+        });
+        await Waiter.pTryUntil('mode is changed to design', () => {
+          Assertions.assertEq('mode is design', 'design', ctx.editor.mode.get());
+        });
+      });
+    });
+  });
+
   context('with TinyMCE < 7.6', () => {
     Loader.withVersion('7.5', (render) => {
       it('updating disabled prop should toggle the editor\'s mode', async () => {

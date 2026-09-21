@@ -1,17 +1,22 @@
 import { Assertions } from '@ephox/agar';
 import { Cell, Obj } from '@ephox/katamari';
 import { Version } from 'src/main/ts/components/Editor';
-import { Editor as TinyMCEEditor } from 'tinymce';
+import { Editor as Editor42Editor } from 'editor42';
+import { Engine } from './Loader';
 
 interface EventHandlerArgs<T> {
   editorEvent: T;
-  editor: TinyMCEEditor;
+  editor: Editor42Editor;
 }
 
-type HandlerType<A> = (a: A, editor: TinyMCEEditor) => unknown;
+type HandlerType<A> = (a: A, editor: Editor42Editor) => unknown;
 
 const VERSIONS: Version[] = [ '5', '6', '7', '8' ];
 const CLOUD_VERSIONS: Version[] = [ '5', '6', '7', '8' ];
+
+// Editor42 first: it is the engine these components target; the TinyMCE versions
+// stay as the compatibility matrix.
+const ENGINES: Engine[] = [ 'editor42', ...VERSIONS ];
 
 const VALID_API_KEY = 'qagffr3pkuv17a8on1afax661irst1hbr4e6tbv888sz91jc';
 
@@ -52,5 +57,6 @@ export {
   EventStore,
   VERSIONS,
   CLOUD_VERSIONS,
+  ENGINES,
   Version
 };
