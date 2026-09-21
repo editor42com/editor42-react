@@ -1,7 +1,7 @@
 {
-  "description": "Official TinyMCE React Component",
+  "description": "Official Editor42 React Component",
   "repository": {
-    "url": "https://github.com/tinymce/tinymce-react"
+    "url": "https://github.com/editor42com/editor42-react"
   },
   "files": [
     "lib",
@@ -22,8 +22,15 @@
     "build-storybook": "storybook build",
     "deploy-storybook": "storybook build && gh-pages -d ./storybook-static -u 'tiny-bot <no-reply@tiny.cloud>' --nojekyll"
   },
-  "keywords": [],
-  "author": "Ephox Corporation DBA Tiny Technologies, Inc.",
+  "keywords": [
+    "editor42",
+    "tinymce",
+    "react",
+    "wysiwyg",
+    "rich text editor",
+    "editor"
+  ],
+  "author": "Editor42 contributors",
   "license": "MIT",
   "dependencies": {
     "prop-types": "^15.6.2"
@@ -79,5 +86,9 @@
     "vite": "^6.2.1"
   },
   "version": "6.3.0",
-  "name": "@tinymce/tinymce-react"
+  "name": "@editor42/editor42-react",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
 }
